@@ -1,3 +1,78 @@
 spring:
   application:
     name: LLM Documentation Generator
+  threads:
+    virtual:
+      enabled: true
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-5.4-nano
+          temperature: 0.2
+
+app:
+  llm:
+    provider: openai
+    max-retries: 3
+    request-timeout-ms: 90000
+  git:
+    clone-depth: 1
+    clone-timeout-seconds: 120
+    temp-base-dir: ${java.io.tmpdir}
+  chunking:
+    chunk-token-target: 3000
+    chunk-token-overlap: 200
+    allowed-extensions:
+      - .java
+      - .kt
+      - .js
+      - .ts
+      - .tsx
+      - .jsx
+      - .py
+      - .go
+      - .rs
+      - .cs
+      - .cpp
+      - .c
+      - .h
+      - .rb
+      - .php
+      - .swift
+      - .scala
+      - .xml
+      - .yaml
+      - .yml
+      - .json
+      - .md
+      - .sql
+      - .sh
+      - .el
+    ignored-directories:
+      - .git
+      - node_modules
+      - target
+      - build
+      - dist
+      - .gradle
+      - __pycache__
+      - .venv
+      - venv
+      - out
+      - bin
+      - obj
+
+logging:
+  level:
+    com.aleksandarsapic.llm_doc_generator: DEBUG
+    org.eclipse.jgit: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{jobId}] %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
