@@ -29,12 +29,17 @@ public class PromptTemplates {
                 Based on the following per-file explanations of a software project from %s,
                 create a comprehensive project overview in Markdown format.
 
-                Include:
-                1. **Project Overview** - What this project does
-                2. **Architecture** - High-level structure and main components
-                3. **Key Components** - The most important files/modules and their roles
-                4. **Technology Stack** - Languages, frameworks, and libraries used
-                5. **Entry Points** - Where execution begins or how to use the project
+                Formatting rules:
+                - Use ## for top-level sections (e.g. ## Project Overview)
+                - Use ### for subsections
+                - Use --- only to separate major sections, not between individual items or files
+                - Do NOT include a file-by-file breakdown — that will be appended separately
+
+                Include these sections:
+                1. ## Project Overview — What this project does and its purpose
+                2. ## Architecture — High-level structure, main components, and data/control flow
+                3. ## Technology Stack — Languages, frameworks, and libraries used
+                4. ## Entry Points — Where execution begins and how to use the project (setup steps, main API endpoints, etc.)
 
                 File explanations:
                 %s

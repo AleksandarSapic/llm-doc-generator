@@ -36,6 +36,23 @@ public class DocumentationController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
+    @GetMapping(value = "/{jobId}/raw", produces = "text/plain;charset=UTF-8")
+    public ResponseEntity<String> getDocumentationRaw(@PathVariable String jobId) {
+        DocJob job = orchestrator.getJob(jobId);
+
+        if (job.getStatus() != DocJobStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Job is not completed yet. Current status: " + job.getStatus());
+        }
+
+        ProjectDocumentation doc = job.getResult();
+        if (doc == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Documentation not available");
+        }
+
+        return ResponseEntity.ok(doc.getMarkdownContent());
+    }
+
     @GetMapping("/{jobId}")
     public ResponseEntity<DocumentationResponse> getDocumentation(
             @PathVariable String jobId) {
