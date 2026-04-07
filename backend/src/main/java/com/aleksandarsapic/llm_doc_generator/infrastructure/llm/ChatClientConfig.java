@@ -1,30 +1,27 @@
 package com.aleksandarsapic.llm_doc_generator.infrastructure.llm;
 
-import com.aleksandarsapic.llm_doc_generator.config.properties.LlmProperties;
+import com.aleksandarsapic.llm_doc_generator.domain.model.LlmProvider;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 @Configuration
 public class ChatClientConfig {
 
-    /**
-     * Selects the ChatModel bean by name based on the configured provider.
-     * Spring AI registers beans named "openAiChatModel" and "ollamaChatModel".
-     * We inject both and pick the right one at runtime.
-     */
     @Bean
-    public ChatClient chatClient(
-            LlmProperties llmProperties,
+    public Map<LlmProvider, ChatClient> chatClientsByProvider(
             @Qualifier("openAiChatModel") ChatModel openAiChatModel,
-            @Qualifier("ollamaChatModel") ChatModel ollamaChatModel) {
+            @Qualifier("ollamaChatModel") ChatModel ollamaChatModel,
+            @Qualifier("anthropicChatModel") ChatModel anthropicChatModel) {
 
-        ChatModel selected = switch (llmProperties.getProvider().toLowerCase()) {
-            case "ollama" -> ollamaChatModel;
-            default -> openAiChatModel;
-        };
-        return ChatClient.builder(selected).build();
+        return Map.of(
+                LlmProvider.OPENAI,    ChatClient.builder(openAiChatModel).build(),
+                LlmProvider.OLLAMA,    ChatClient.builder(ollamaChatModel).build(),
+                LlmProvider.ANTHROPIC, ChatClient.builder(anthropicChatModel).build()
+        );
     }
 }

@@ -13,4 +13,8 @@ public class GenerateDocumentationRequest {
         message = "Repository URL must use http or https scheme"
     )
     private String repositoryUrl;
+
+    private String provider;
+
+    private String model;
 }

@@ -15,6 +15,8 @@ public class DocJob {
     private int totalFiles;
     private int processedFiles;
     private String errorMessage;
+    private String llmProvider;
+    private String llmModel;
     private ProjectDocumentation result;
     private Instant createdAt;
     private Instant updatedAt;

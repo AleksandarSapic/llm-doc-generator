@@ -25,7 +25,7 @@ public class DocumentationController {
     public ResponseEntity<JobSubmittedResponse> generate(
             @Valid @RequestBody GenerateDocumentationRequest request) {
 
-        DocJob job = orchestrator.submitJob(request.getRepositoryUrl());
+        DocJob job = orchestrator.submitJob(request.getRepositoryUrl(), request.getProvider(), request.getModel());
 
         JobSubmittedResponse response = JobSubmittedResponse.builder()
                 .jobId(job.getJobId())

@@ -14,4 +14,6 @@ public class JobStatusResponse {
     int processedFiles;
     int progressPercent;
     String errorMessage;
+    String llmProvider;
+    String llmModel;
 }

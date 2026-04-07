@@ -43,6 +43,8 @@ public class JobStatusController {
                 .processedFiles(job.getProcessedFiles())
                 .progressPercent(job.getProgressPercent())
                 .errorMessage(job.getErrorMessage())
+                .llmProvider(job.getLlmProvider())
+                .llmModel(job.getLlmModel())
                 .build();
     }
 }

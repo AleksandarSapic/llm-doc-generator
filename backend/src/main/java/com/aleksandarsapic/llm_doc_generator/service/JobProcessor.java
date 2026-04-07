@@ -30,7 +30,7 @@ public class JobProcessor {
     private final TempDirectoryManager tempDirectoryManager;
 
     @Async("jobExecutor")
-    public void process(String jobId) {
+    public void process(String jobId, LlmSelection selection) {
         MDC.put("jobId", jobId);
         DocJob job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new JobNotFoundException(jobId));
@@ -64,7 +64,7 @@ public class JobProcessor {
                     Path relativePath = tempDir.relativize(filePath);
                     List<FileChunk> chunks = codeChunker.chunk(relativePath, content);
                     if (!chunks.isEmpty()) {
-                        FileExplanation explanation = llmClient.explainChunks(chunks);
+                        FileExplanation explanation = llmClient.explainChunks(selection, chunks);
                         explanations.add(FileExplanation.builder()
                                 .filePath(relativePath.toString())
                                 .explanation(explanation.getExplanation())
@@ -81,7 +81,7 @@ public class JobProcessor {
 
             // Phase 4: Aggregate
             progressTracker.updateStatus(job, DocJobStatus.AGGREGATING, "Generating project summary...");
-            String projectSummary = llmClient.summarizeProject(explanations, job.getRepositoryUrl());
+            String projectSummary = llmClient.summarizeProject(selection, explanations, job.getRepositoryUrl());
             ProjectDocumentation documentation = documentationAggregator.aggregate(
                     jobId, job.getRepositoryUrl(), explanations, projectSummary);
 
