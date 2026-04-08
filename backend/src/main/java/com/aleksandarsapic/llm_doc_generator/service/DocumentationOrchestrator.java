@@ -28,6 +28,11 @@ public class DocumentationOrchestrator {
     public DocJob submitJob(String repositoryUrl, String providerStr, String modelStr) {
         urlValidator.validate(repositoryUrl);
 
+        return jobRepository.findActiveByRepositoryUrl(repositoryUrl)
+                .orElseGet(() -> createAndDispatch(repositoryUrl, providerStr, modelStr));
+    }
+
+    private DocJob createAndDispatch(String repositoryUrl, String providerStr, String modelStr) {
         String resolvedProviderStr = StringUtils.hasText(providerStr)
                 ? providerStr
                 : llmProperties.getProvider();

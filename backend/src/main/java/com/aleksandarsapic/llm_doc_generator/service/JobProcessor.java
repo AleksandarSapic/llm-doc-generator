@@ -31,73 +31,90 @@ public class JobProcessor {
 
     @Async("jobExecutor")
     public void process(String jobId, LlmSelection selection) {
-        MDC.put("jobId", jobId);
-        DocJob job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new JobNotFoundException(jobId));
-        Path tempDir = null;
+        try (var ignored = MDC.putCloseable("jobId", jobId)) {
+            DocJob job = jobRepository.findById(jobId)
+                    .orElseThrow(() -> new JobNotFoundException(jobId));
+            Path tempDir = null;
 
-        try {
-            // Phase 1: Clone
-            progressTracker.updateStatus(job, DocJobStatus.CLONING, "Cloning repository...");
-            tempDir = tempDirectoryManager.createTempDirectory("llm-doc-" + jobId + "-");
-            gitCloner.clone(job.getRepositoryUrl(), tempDir);
+            try {
+                progressTracker.updateStatus(job, DocJobStatus.CLONING, "Cloning repository...");
+                tempDir = tempDirectoryManager.createTempDirectory("llm-doc-" + jobId + "-");
+                GitCloner.CloningResult cloneResult = gitCloner.clone(job.getRepositoryUrl(), tempDir);
 
-            // Phase 2: Traverse
-            progressTracker.updateStatus(job, DocJobStatus.TRAVERSING, "Discovering source files...");
-            List<Path> sourceFiles = fileTraverser.traverse(tempDir);
-            job.setTotalFiles(sourceFiles.size());
-            progressTracker.updateStatus(job, DocJobStatus.TRAVERSING,
-                    "Found " + sourceFiles.size() + " source files");
+                job.setGitCommitSha(cloneResult.commitSha());
 
-            // Phase 3: Process each file
-            progressTracker.updateStatus(job, DocJobStatus.PROCESSING, "Starting LLM analysis...");
-            List<FileExplanation> explanations = new ArrayList<>();
-            int processed = 0;
-
-            for (Path filePath : sourceFiles) {
-                String fileName = filePath.getFileName().toString();
-                progressTracker.updateProgress(job, processed,
-                        "Explaining file " + (processed + 1) + " of " + sourceFiles.size() + ": " + fileName);
-
-                try {
-                    String content = Files.readString(filePath);
-                    Path relativePath = tempDir.relativize(filePath);
-                    List<FileChunk> chunks = codeChunker.chunk(relativePath, content);
-                    if (!chunks.isEmpty()) {
-                        FileExplanation explanation = llmClient.explainChunks(selection, chunks);
-                        explanations.add(FileExplanation.builder()
-                                .filePath(relativePath.toString())
-                                .explanation(explanation.getExplanation())
-                                .build());
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to explain file {}, skipping: {}", filePath, e.getMessage());
+                if (returnCachedIfAvailable(job, cloneResult.commitSha())) {
+                    return;
                 }
 
-                processed++;
-                progressTracker.updateProgress(job, processed,
-                        "Explained " + processed + " of " + sourceFiles.size() + " files");
+                jobRepository.save(job);
+                List<FileExplanation> explanations = explainFiles(job, selection, cloneResult.directory());
+                aggregateAndComplete(job, jobId, selection, explanations);
+            } catch (Exception e) {
+                log.error("Job {} failed with exception", jobId, e);
+                progressTracker.markFailed(job, e.getMessage());
+            } finally {
+                if (tempDir != null) {
+                    tempDirectoryManager.deleteRecursively(tempDir);
+                }
             }
-
-            // Phase 4: Aggregate
-            progressTracker.updateStatus(job, DocJobStatus.AGGREGATING, "Generating project summary...");
-            String projectSummary = llmClient.summarizeProject(selection, explanations, job.getRepositoryUrl());
-            ProjectDocumentation documentation = documentationAggregator.aggregate(
-                    jobId, job.getRepositoryUrl(), explanations, projectSummary);
-
-            // Phase 5: Complete
-            job.setResult(documentation);
-            progressTracker.updateStatus(job, DocJobStatus.COMPLETED,
-                    "Documentation generated for " + explanations.size() + " files");
-
-        } catch (Exception e) {
-            log.error("Job {} failed with exception", jobId, e);
-            progressTracker.markFailed(job, e.getMessage());
-        } finally {
-            if (tempDir != null) {
-                tempDirectoryManager.deleteRecursively(tempDir);
-            }
-            MDC.remove("jobId");
         }
+    }
+
+    /**
+     * Copies cached result onto the job if a completed job for this repo+SHA exists.
+     * Returns true if cache hit (job is marked complete and caller should return early).
+     */
+    private boolean returnCachedIfAvailable(DocJob job, String commitSha) {
+        return jobRepository.findCompletedByRepoAndSha(job.getRepositoryUrl(), commitSha)
+                .map(cached -> {
+                    job.setResult(cached.getResult());
+                    job.setTotalFiles(cached.getTotalFiles());
+                    job.setProcessedFiles(cached.getProcessedFiles());
+                    progressTracker.updateStatus(job, DocJobStatus.COMPLETED,
+                            "Returned cached result from commit " + commitSha.substring(0, 7));
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    private List<FileExplanation> explainFiles(DocJob job, LlmSelection selection, Path repoDir) {
+        progressTracker.updateStatus(job, DocJobStatus.TRAVERSING, "Discovering source files...");
+        List<Path> sourceFiles = fileTraverser.traverse(repoDir);
+        job.setTotalFiles(sourceFiles.size());
+        progressTracker.updateStatus(job, DocJobStatus.TRAVERSING,
+                "Found " + sourceFiles.size() + " source files");
+
+        progressTracker.updateStatus(job, DocJobStatus.PROCESSING, "Starting LLM analysis...");
+        List<FileExplanation> explanations = new ArrayList<>();
+
+        for (int i = 0; i < sourceFiles.size(); i++) {
+            Path relativePath = repoDir.relativize(sourceFiles.get(i));
+            try {
+                String content = Files.readString(sourceFiles.get(i));
+                List<FileChunk> chunks = codeChunker.chunk(relativePath, content);
+                if (!chunks.isEmpty()) {
+                    explanations.add(llmClient.explainChunks(selection, chunks));
+                }
+            } catch (Exception e) {
+                log.warn("Failed to explain file {}, skipping: {}", relativePath, e.getMessage());
+            }
+            progressTracker.updateProgress(job, i + 1,
+                    "Explained " + (i + 1) + " of " + sourceFiles.size() + " files");
+        }
+
+        return explanations;
+    }
+
+    private void aggregateAndComplete(DocJob job, String jobId, LlmSelection selection,
+                                      List<FileExplanation> explanations) {
+        progressTracker.updateStatus(job, DocJobStatus.AGGREGATING, "Generating project summary...");
+        String projectSummary = llmClient.summarizeProject(selection, explanations, job.getRepositoryUrl());
+        ProjectDocumentation documentation = documentationAggregator.aggregate(
+                jobId, job.getRepositoryUrl(), explanations, projectSummary);
+
+        job.setResult(documentation);
+        progressTracker.updateStatus(job, DocJobStatus.COMPLETED,
+                "Documentation generated for " + explanations.size() + " files");
     }
 }

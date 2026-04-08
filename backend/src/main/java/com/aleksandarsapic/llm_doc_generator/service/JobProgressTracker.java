@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -43,16 +42,11 @@ public class JobProgressTracker {
         log.error("Job {} failed: {}", job.getJobId(), errorMessage);
     }
 
-    /** Remove jobs older than 24 hours to prevent unbounded memory growth. */
+    /** Remove jobs older than 24 hours to prevent unbounded growth. */
     @Scheduled(fixedDelay = 3_600_000) // every hour
     public void cleanupOldJobs() {
         Instant cutoff = Instant.now().minus(24, ChronoUnit.HOURS);
-        List<DocJob> allJobs = jobRepository.findAll();
-        for (DocJob job : allJobs) {
-            if (job.getCreatedAt() != null && job.getCreatedAt().isBefore(cutoff)) {
-                jobRepository.deleteById(job.getJobId());
-                log.info("Cleaned up old job: {}", job.getJobId());
-            }
-        }
+        jobRepository.deleteByCreatedAtBefore(cutoff);
+        log.info("Cleaned up jobs created before {}", cutoff);
     }
 }

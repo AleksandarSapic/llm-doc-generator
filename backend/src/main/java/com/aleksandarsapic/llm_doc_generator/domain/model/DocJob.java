@@ -10,6 +10,7 @@ import java.time.Instant;
 public class DocJob {
     private String jobId;
     private String repositoryUrl;
+    private String gitCommitSha;
     private DocJobStatus status;
     private String statusMessage;
     private int totalFiles;

@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 @Slf4j
@@ -20,7 +21,7 @@ public class JGitCloner implements GitCloner {
     private final GitProperties gitProperties;
 
     @Override
-    public Path clone(String repositoryUrl, Path targetDirectory) {
+    public CloningResult clone(String repositoryUrl, Path targetDirectory) {
         log.info("Cloning repository: {} into {}", repositoryUrl, targetDirectory);
 
         CloneCommand cloneCommand = Git.cloneRepository()
@@ -30,10 +31,13 @@ public class JGitCloner implements GitCloner {
                 .setNoCheckout(false);
 
         try (Git git = cloneCommand.call()) {
-            log.info("Successfully cloned repository: {}", repositoryUrl);
-            return targetDirectory;
+            String commitSha = git.getRepository().resolve("HEAD").getName();
+            log.info("Successfully cloned repository: {} at commit {}", repositoryUrl, commitSha.substring(0, 7));
+            return new CloningResult(targetDirectory, commitSha);
         } catch (GitAPIException e) {
             throw new GitCloningException("Failed to clone repository: " + repositoryUrl, e);
+        } catch (IOException e) {
+            throw new GitCloningException("Failed to resolve HEAD commit for repository: " + repositoryUrl, e);
         }
     }
 }
