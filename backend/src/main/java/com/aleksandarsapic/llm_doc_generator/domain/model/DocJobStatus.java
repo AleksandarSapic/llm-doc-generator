@@ -7,5 +7,9 @@ public enum DocJobStatus {
     PROCESSING,
     AGGREGATING,
     COMPLETED,
-    FAILED
+    FAILED;
+
+    public boolean isTerminal() {
+        return this == COMPLETED || this == FAILED;
+    }
 }

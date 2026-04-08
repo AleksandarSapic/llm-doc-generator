@@ -13,5 +13,5 @@ public interface JobRepository {
     void deleteById(String jobId);
     Optional<DocJob> findCompletedByRepoAndSha(String repositoryUrl, String commitSha);
     Optional<DocJob> findActiveByRepositoryUrl(String repositoryUrl);
-    void deleteByCreatedAtBefore(Instant cutoff);
+    List<String> deleteByCreatedAtBefore(Instant cutoff);
 }

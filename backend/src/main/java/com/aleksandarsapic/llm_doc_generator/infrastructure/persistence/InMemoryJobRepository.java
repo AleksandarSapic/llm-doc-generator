@@ -59,7 +59,12 @@ public class InMemoryJobRepository implements JobRepository {
     }
 
     @Override
-    public void deleteByCreatedAtBefore(Instant cutoff) {
-        store.values().removeIf(j -> j.getCreatedAt() != null && j.getCreatedAt().isBefore(cutoff));
+    public List<String> deleteByCreatedAtBefore(Instant cutoff) {
+        List<String> ids = store.values().stream()
+                .filter(j -> j.getCreatedAt() != null && j.getCreatedAt().isBefore(cutoff))
+                .map(DocJob::getJobId)
+                .toList();
+        ids.forEach(store::remove);
+        return ids;
     }
 }

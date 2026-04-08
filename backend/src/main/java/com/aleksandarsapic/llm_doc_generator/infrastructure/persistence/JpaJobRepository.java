@@ -66,7 +66,9 @@ public class JpaJobRepository implements JobRepository {
 
     @Override
     @Transactional
-    public void deleteByCreatedAtBefore(Instant cutoff) {
+    public List<String> deleteByCreatedAtBefore(Instant cutoff) {
+        List<String> ids = jpaRepository.findJobIdsByCreatedAtBefore(cutoff);
         jpaRepository.deleteByCreatedAtBefore(cutoff);
+        return ids;
     }
 }

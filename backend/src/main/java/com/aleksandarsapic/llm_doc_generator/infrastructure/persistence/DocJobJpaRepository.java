@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface DocJobJpaRepository extends JpaRepository<DocJobEntity, String> {
@@ -19,6 +20,9 @@ public interface DocJobJpaRepository extends JpaRepository<DocJobEntity, String>
     Optional<DocJobEntity> findFirstByRepositoryUrlAndStatusNotOrderByCreatedAtDesc(
             String repositoryUrl,
             DocJobStatus status);
+
+    @Query("SELECT d.jobId FROM DocJobEntity d WHERE d.createdAt < :cutoff")
+    List<String> findJobIdsByCreatedAtBefore(@Param("cutoff") Instant cutoff);
 
     @Modifying
     @Query("DELETE FROM DocJobEntity d WHERE d.createdAt < :cutoff")

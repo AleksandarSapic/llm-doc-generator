@@ -1,5 +1,6 @@
 package com.aleksandarsapic.llm_doc_generator.service;
 
+import com.aleksandarsapic.llm_doc_generator.api.dto.response.JobStatusResponse;
 import com.aleksandarsapic.llm_doc_generator.domain.model.DocJob;
 import com.aleksandarsapic.llm_doc_generator.domain.model.DocJobStatus;
 import com.aleksandarsapic.llm_doc_generator.domain.port.JobRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -17,12 +19,14 @@ import java.time.temporal.ChronoUnit;
 public class JobProgressTracker {
 
     private final JobRepository jobRepository;
+    private final SseEmitterRegistry sseEmitterRegistry;
 
     public void updateStatus(DocJob job, DocJobStatus status, String statusMessage) {
         job.setStatus(status);
         job.setStatusMessage(statusMessage);
         job.setUpdatedAt(Instant.now());
         jobRepository.save(job);
+        sseEmitterRegistry.broadcast(job.getJobId(), JobStatusResponse.from(job));
         log.debug("Job {} status → {} | {}", job.getJobId(), status, statusMessage);
     }
 
@@ -31,6 +35,7 @@ public class JobProgressTracker {
         job.setStatusMessage(statusMessage);
         job.setUpdatedAt(Instant.now());
         jobRepository.save(job);
+        sseEmitterRegistry.broadcast(job.getJobId(), JobStatusResponse.from(job));
     }
 
     public void markFailed(DocJob job, String errorMessage) {
@@ -39,6 +44,7 @@ public class JobProgressTracker {
         job.setStatusMessage("Failed: " + errorMessage);
         job.setUpdatedAt(Instant.now());
         jobRepository.save(job);
+        sseEmitterRegistry.broadcast(job.getJobId(), JobStatusResponse.from(job));
         log.error("Job {} failed: {}", job.getJobId(), errorMessage);
     }
 
@@ -46,7 +52,8 @@ public class JobProgressTracker {
     @Scheduled(fixedDelay = 3_600_000) // every hour
     public void cleanupOldJobs() {
         Instant cutoff = Instant.now().minus(24, ChronoUnit.HOURS);
-        jobRepository.deleteByCreatedAtBefore(cutoff);
-        log.info("Cleaned up jobs created before {}", cutoff);
+        List<String> deletedIds = jobRepository.deleteByCreatedAtBefore(cutoff);
+        deletedIds.forEach(sseEmitterRegistry::evict);
+        log.info("Cleaned up {} jobs created before {}", deletedIds.size(), cutoff);
     }
 }
