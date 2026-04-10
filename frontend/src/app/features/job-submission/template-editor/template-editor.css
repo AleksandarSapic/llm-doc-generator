@@ -1,10 +1,17 @@
 .template-editor {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-top: 8px;
+  gap: 20px;
+  padding-top: 12px;
 }
 
 .full-width {
   width: 100%;
+}
+
+/* Monospace font for prompt template textareas */
+:host ::ng-deep textarea[matInput] {
+  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+  font-size: 0.83rem !important;
+  line-height: 1.7 !important;
 }

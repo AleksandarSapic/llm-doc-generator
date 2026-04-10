@@ -9,9 +9,11 @@
   <app-error-banner [message]="error()" (dismissed)="error.set(null)"></app-error-banner>
 
   @if (isLoading() && !jobStatus()) {
-    <div class="loading-container">
-      <mat-spinner diameter="48"></mat-spinner>
-      <p>Connecting to job stream...</p>
+    <div class="loading-outer">
+      <div class="loading-card">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p class="loading-text">Connecting to job stream...</p>
+      </div>
     </div>
   }
 

@@ -23,7 +23,7 @@
         <div class="provider-row">
           <mat-form-field appearance="outline" class="provider-field">
             <mat-label>LLM Provider</mat-label>
-            <mat-select formControlName="provider">
+            <mat-select formControlName="provider" style="padding: 5px;">
               <mat-option value="">Default</mat-option>
               <mat-option value="openai">OpenAI</mat-option>
               <mat-option value="anthropic">Anthropic</mat-option>
@@ -34,7 +34,7 @@
           <mat-form-field appearance="outline" class="model-field">
             <mat-label>Model</mat-label>
             <input matInput formControlName="model" [placeholder]="modelPlaceholder()" />
-            <mat-hint>Leave blank to use the provider default</mat-hint>
+            <mat-hint style="padding-top: 5px;">Leave blank to use the provider default</mat-hint>
           </mat-form-field>
         </div>
 

@@ -1,9 +1,18 @@
-<mat-toolbar color="primary" class="toolbar">
-  <span class="brand">LLM Doc Generator</span>
+<mat-toolbar class="toolbar">
+  <a routerLink="/" class="brand">
+    <mat-icon class="brand-icon">auto_stories</mat-icon>
+    <span class="brand-text">LLM Doc Generator</span>
+  </a>
   <span class="spacer"></span>
   <nav class="nav-links">
-    <a mat-button routerLink="/submit" routerLinkActive="nav-active">New Job</a>
-    <a mat-button routerLink="/jobs" routerLinkActive="nav-active">All Jobs</a>
+    <a mat-button routerLink="/submit" routerLinkActive="nav-active">
+      <mat-icon>rocket_launch</mat-icon>
+      New Job
+    </a>
+    <a mat-button routerLink="/jobs" routerLinkActive="nav-active">
+      <mat-icon>history</mat-icon>
+      All Jobs
+    </a>
   </nav>
 </mat-toolbar>
 

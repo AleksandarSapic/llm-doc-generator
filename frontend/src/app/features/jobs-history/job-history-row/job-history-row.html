@@ -2,7 +2,14 @@
   <td class="id-cell mono">{{ shortId() }}</td>
   <td><app-status-badge [status]="job().status"></app-status-badge></td>
   <td class="provider-cell">{{ job().llmProvider }} / {{ job().llmModel }}</td>
-  <td class="progress-cell">{{ job().progressPercent }}%</td>
+  <td class="progress-cell">
+    <div class="progress-mini-wrapper">
+      <div class="progress-mini-bar-track">
+        <div class="progress-mini-bar" [style.width.%]="job().progressPercent"></div>
+      </div>
+      <span class="progress-label">{{ job().progressPercent }}%</span>
+    </div>
+  </td>
   <td class="action-cell">
     @if (job().status === 'COMPLETED') {
       <a mat-stroked-button [routerLink]="['/jobs', job().jobId, 'result']">

@@ -7,34 +7,48 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .page-title {
-  font-size: 1.75rem;
-  font-weight: 500;
+  font-size: 1.875rem;
+  font-weight: 700;
   margin: 0;
+  letter-spacing: -0.025em;
 }
 
 .loading-container {
   display: flex;
   justify-content: center;
-  padding: 48px;
+  padding: 64px;
 }
 
+/* Empty state */
 .empty-card mat-card-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 48px !important;
+  gap: 20px;
+  padding: 64px 48px !important;
+  text-align: center;
 }
 
 .empty-icon {
-  font-size: 3rem;
-  width: 3rem;
-  height: 3rem;
+  font-size: 3.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
   color: var(--mat-sys-on-surface-variant);
+  opacity: 0.45;
+}
+
+/* Table card — overflow-hidden clips table to card's rounded corners */
+:host ::ng-deep mat-card {
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07),
+              0 4px 16px rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  overflow: hidden;
+  background: #fff !important;
 }
 
 .table-wrapper {
@@ -44,18 +58,22 @@
 .jobs-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+}
+
+.jobs-table thead tr {
+  background: var(--mat-sys-surface-variant);
 }
 
 .jobs-table th {
-  padding: 12px 16px;
+  padding: 11px 16px;
   text-align: left;
-  font-weight: 500;
-  border-bottom: 2px solid var(--mat-sys-outline-variant);
+  font-weight: 600;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
   color: var(--mat-sys-on-surface-variant);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .jobs-table th.right {
@@ -63,7 +81,7 @@
 }
 
 :host ::ng-deep .job-row td {
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   vertical-align: middle;
 }
@@ -72,6 +90,10 @@
   border-bottom: none;
 }
 
+:host ::ng-deep .job-row {
+  transition: background 120ms ease;
+}
+
 :host ::ng-deep .job-row:hover td {
-  background: var(--mat-sys-surface-variant);
+  background: #F8FAFC;
 }

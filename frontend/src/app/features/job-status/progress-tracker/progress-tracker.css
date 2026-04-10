@@ -1,7 +1,7 @@
 .progress-tracker {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .status-row {
@@ -12,28 +12,37 @@
 
 .status-message {
   color: var(--mat-sys-on-surface-variant);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .progress-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
-.progress-bar {
-  border-radius: 4px;
+/* Pill-shaped progress bar with brand color */
+:host ::ng-deep mat-progress-bar {
+  border-radius: 9999px !important;
+  height: 7px !important;
+  --mdc-linear-progress-active-indicator-color: #6366F1;
+  --mdc-linear-progress-track-color: var(--mat-sys-outline-variant);
 }
 
 .progress-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--mat-sys-on-surface-variant);
 }
 
+.percent {
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
 .divider {
-  margin: 4px 0;
+  margin: 6px 0;
 }
 
 .meta-row {
@@ -45,6 +54,7 @@
 .meta-label {
   color: var(--mat-sys-on-surface-variant);
   min-width: 72px;
+  font-weight: 500;
 }
 
 .meta-value {
@@ -52,6 +62,6 @@
 }
 
 .mono {
-  font-family: monospace;
-  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
 }

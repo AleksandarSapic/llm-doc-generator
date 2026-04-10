@@ -2,11 +2,31 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  background: linear-gradient(135deg, #4338CA 0%, #6366F1 100%) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
 }
 
 .brand {
-  font-size: 1.1rem;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-icon {
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.97);
+}
+
+.brand-text {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.97);
 }
 
 .spacer {
@@ -18,8 +38,23 @@
   gap: 4px;
 }
 
+.nav-links a {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-radius: 8px;
+  transition: background 150ms ease, color 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
 .nav-active {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
 }
 
 .global-loader {
@@ -33,11 +68,14 @@
 .main-content {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 40px 24px;
 }
 
-@media (max-width: 600px) {
-  .main-content {
-    padding: 16px 12px;
-  }
+@media (max-width: 768px) {
+  .main-content { padding: 24px 16px; }
+  .brand-text { font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .main-content { padding: 16px 12px; }
 }

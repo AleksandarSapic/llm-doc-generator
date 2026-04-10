@@ -3,18 +3,49 @@
 }
 
 .mono {
-  font-family: monospace;
-  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .provider-cell {
-  font-size: 0.85rem;
+  font-size: 0.83rem;
   color: var(--mat-sys-on-surface-variant);
 }
 
 .progress-cell {
-  font-size: 0.85rem;
+  min-width: 120px;
+}
+
+.progress-mini-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.progress-mini-bar-track {
+  width: 64px;
+  height: 5px;
+  background: var(--mat-sys-outline-variant);
+  border-radius: 9999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.progress-mini-bar {
+  height: 100%;
+  background: #6366F1;
+  border-radius: 9999px;
+  transition: width 400ms ease;
+}
+
+.progress-label {
+  font-size: 0.78rem;
+  color: var(--mat-sys-on-surface-variant);
+  min-width: 32px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .action-cell {

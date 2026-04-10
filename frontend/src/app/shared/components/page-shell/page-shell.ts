@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
 import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
@@ -15,6 +16,7 @@ import { LoadingService } from '../../../core/services/loading.service';
     MatToolbarModule,
     MatButtonModule,
     MatProgressBarModule,
+    MatIconModule,
   ],
   templateUrl: './page-shell.html',
   styleUrl: './page-shell.css',
