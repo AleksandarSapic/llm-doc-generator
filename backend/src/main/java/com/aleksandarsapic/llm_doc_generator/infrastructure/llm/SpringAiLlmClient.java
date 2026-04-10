@@ -5,6 +5,7 @@ import com.aleksandarsapic.llm_doc_generator.domain.model.FileChunk;
 import com.aleksandarsapic.llm_doc_generator.domain.model.FileExplanation;
 import com.aleksandarsapic.llm_doc_generator.domain.model.LlmProvider;
 import com.aleksandarsapic.llm_doc_generator.domain.model.LlmSelection;
+import com.aleksandarsapic.llm_doc_generator.domain.model.PromptConfig;
 import com.aleksandarsapic.llm_doc_generator.domain.port.LlmClient;
 import com.aleksandarsapic.llm_doc_generator.exception.LlmException;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class SpringAiLlmClient implements LlmClient {
     private final LlmProperties llmProperties;
 
     @Override
-    public FileExplanation explainChunks(LlmSelection selection, List<FileChunk> chunks) {
+    public FileExplanation explainChunks(LlmSelection selection, PromptConfig promptConfig, List<FileChunk> chunks) {
         if (chunks.isEmpty()) {
             throw new LlmException("Cannot explain empty chunk list");
         }
@@ -39,7 +40,10 @@ public class SpringAiLlmClient implements LlmClient {
                 .map(FileChunk::getContent)
                 .collect(Collectors.joining("\n\n"));
 
-        String prompt = promptTemplates.fileExplanationPrompt(combinedContent);
+        String template = isCustom(promptConfig.fileExplanationTemplate())
+                ? promptConfig.fileExplanationTemplate()
+                : promptTemplates.getDefaultFileExplanationTemplate();
+        String prompt = template.formatted(combinedContent);
         String filePath = chunks.getFirst().getFilePath();
 
         String explanation = callWithRetry(prompt, filePath, selection);
@@ -51,13 +55,22 @@ public class SpringAiLlmClient implements LlmClient {
     }
 
     @Override
-    public String summarizeProject(LlmSelection selection, List<FileExplanation> explanations, String repositoryUrl) {
+    public String summarizeProject(LlmSelection selection, PromptConfig promptConfig,
+                                   List<FileExplanation> explanations, String repositoryUrl) {
         String allExplanations = explanations.stream()
                 .map(e -> "### " + e.getFilePath() + "\n" + e.getExplanation())
                 .collect(Collectors.joining("\n\n"));
 
-        String prompt = promptTemplates.projectSummaryPrompt(allExplanations, repositoryUrl);
+        String template = isCustom(promptConfig.projectSummaryTemplate())
+                ? promptConfig.projectSummaryTemplate()
+                : promptTemplates.getDefaultProjectSummaryTemplate();
+        // first %s = repositoryUrl, second %s = fileExplanations (matches template layout)
+        String prompt = template.formatted(repositoryUrl, allExplanations);
         return callWithRetry(prompt, "project-summary", selection);
+    }
+
+    private boolean isCustom(String template) {
+        return template != null && !template.isBlank();
     }
 
     private String callWithRetry(String prompt, String context, LlmSelection selection) {

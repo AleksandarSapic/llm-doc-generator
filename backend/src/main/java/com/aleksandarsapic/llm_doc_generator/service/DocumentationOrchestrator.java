@@ -5,6 +5,7 @@ import com.aleksandarsapic.llm_doc_generator.domain.model.DocJob;
 import com.aleksandarsapic.llm_doc_generator.domain.model.DocJobStatus;
 import com.aleksandarsapic.llm_doc_generator.domain.model.LlmProvider;
 import com.aleksandarsapic.llm_doc_generator.domain.model.LlmSelection;
+import com.aleksandarsapic.llm_doc_generator.domain.model.PromptConfig;
 import com.aleksandarsapic.llm_doc_generator.domain.port.JobRepository;
 import com.aleksandarsapic.llm_doc_generator.exception.JobNotFoundException;
 import com.aleksandarsapic.llm_doc_generator.util.RepositoryUrlValidator;
@@ -25,14 +26,17 @@ public class DocumentationOrchestrator {
     private final RepositoryUrlValidator urlValidator;
     private final LlmProperties llmProperties;
 
-    public DocJob submitJob(String repositoryUrl, String providerStr, String modelStr) {
+    public DocJob submitJob(String repositoryUrl, String providerStr, String modelStr,
+                            String fileExplanationTemplate, String projectSummaryTemplate) {
         urlValidator.validate(repositoryUrl);
 
         return jobRepository.findActiveByRepositoryUrl(repositoryUrl)
-                .orElseGet(() -> createAndDispatch(repositoryUrl, providerStr, modelStr));
+                .orElseGet(() -> createAndDispatch(repositoryUrl, providerStr, modelStr,
+                        fileExplanationTemplate, projectSummaryTemplate));
     }
 
-    private DocJob createAndDispatch(String repositoryUrl, String providerStr, String modelStr) {
+    private DocJob createAndDispatch(String repositoryUrl, String providerStr, String modelStr,
+                                     String fileExplanationTemplate, String projectSummaryTemplate) {
         String resolvedProviderStr = StringUtils.hasText(providerStr)
                 ? providerStr
                 : llmProperties.getProvider();
@@ -51,7 +55,8 @@ public class DocumentationOrchestrator {
                 .updatedAt(Instant.now())
                 .build();
         jobRepository.save(job);
-        jobProcessor.process(jobId, new LlmSelection(provider, model));
+        PromptConfig promptConfig = new PromptConfig(fileExplanationTemplate, projectSummaryTemplate);
+        jobProcessor.process(jobId, new LlmSelection(provider, model), promptConfig);
         return job;
     }
 

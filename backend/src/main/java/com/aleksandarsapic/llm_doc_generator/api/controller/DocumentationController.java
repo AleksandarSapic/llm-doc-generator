@@ -3,9 +3,12 @@ package com.aleksandarsapic.llm_doc_generator.api.controller;
 import com.aleksandarsapic.llm_doc_generator.api.dto.request.GenerateDocumentationRequest;
 import com.aleksandarsapic.llm_doc_generator.api.dto.response.DocumentationResponse;
 import com.aleksandarsapic.llm_doc_generator.api.dto.response.JobSubmittedResponse;
+import com.aleksandarsapic.llm_doc_generator.api.dto.response.PromptTemplatesResponse;
+import com.aleksandarsapic.llm_doc_generator.api.validation.PromptTemplateValidator;
 import com.aleksandarsapic.llm_doc_generator.domain.model.DocJob;
 import com.aleksandarsapic.llm_doc_generator.domain.model.DocJobStatus;
 import com.aleksandarsapic.llm_doc_generator.domain.model.ProjectDocumentation;
+import com.aleksandarsapic.llm_doc_generator.infrastructure.llm.PromptTemplates;
 import com.aleksandarsapic.llm_doc_generator.service.DocumentationOrchestrator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +23,26 @@ import org.springframework.web.server.ResponseStatusException;
 public class DocumentationController {
 
     private final DocumentationOrchestrator orchestrator;
+    private final PromptTemplates promptTemplates;
+
+    @GetMapping("/prompt-templates")
+    public ResponseEntity<PromptTemplatesResponse> getDefaultPromptTemplates() {
+        return ResponseEntity.ok(PromptTemplatesResponse.builder()
+                .fileExplanationTemplate(promptTemplates.getDefaultFileExplanationTemplate())
+                .projectSummaryTemplate(promptTemplates.getDefaultProjectSummaryTemplate())
+                .build());
+    }
 
     @PostMapping("/generate")
     public ResponseEntity<JobSubmittedResponse> generate(
             @Valid @RequestBody GenerateDocumentationRequest request) {
 
-        DocJob job = orchestrator.submitJob(request.getRepositoryUrl(), request.getProvider(), request.getModel());
+        PromptTemplateValidator.validateFileExplanationTemplate(request.getFileExplanationTemplate());
+        PromptTemplateValidator.validateProjectSummaryTemplate(request.getProjectSummaryTemplate());
+
+        DocJob job = orchestrator.submitJob(
+                request.getRepositoryUrl(), request.getProvider(), request.getModel(),
+                request.getFileExplanationTemplate(), request.getProjectSummaryTemplate());
 
         JobSubmittedResponse response = JobSubmittedResponse.builder()
                 .jobId(job.getJobId())

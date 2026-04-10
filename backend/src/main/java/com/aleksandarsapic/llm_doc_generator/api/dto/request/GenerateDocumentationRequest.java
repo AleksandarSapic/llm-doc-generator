@@ -17,4 +17,8 @@ public class GenerateDocumentationRequest {
     private String provider;
 
     private String model;
+
+    private String fileExplanationTemplate;
+
+    private String projectSummaryTemplate;
 }

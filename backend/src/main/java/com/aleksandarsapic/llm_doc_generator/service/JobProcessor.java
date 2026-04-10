@@ -30,7 +30,7 @@ public class JobProcessor {
     private final TempDirectoryManager tempDirectoryManager;
 
     @Async("jobExecutor")
-    public void process(String jobId, LlmSelection selection) {
+    public void process(String jobId, LlmSelection selection, PromptConfig promptConfig) {
         try (var ignored = MDC.putCloseable("jobId", jobId)) {
             DocJob job = jobRepository.findById(jobId)
                     .orElseThrow(() -> new JobNotFoundException(jobId));
@@ -48,8 +48,8 @@ public class JobProcessor {
                 }
 
                 jobRepository.save(job);
-                List<FileExplanation> explanations = explainFiles(job, selection, cloneResult.directory());
-                aggregateAndComplete(job, jobId, selection, explanations);
+                List<FileExplanation> explanations = explainFiles(job, selection, promptConfig, cloneResult.directory());
+                aggregateAndComplete(job, jobId, selection, promptConfig, explanations);
             } catch (Exception e) {
                 log.error("Job {} failed with exception", jobId, e);
                 progressTracker.markFailed(job, e.getMessage());
@@ -78,7 +78,8 @@ public class JobProcessor {
                 .orElse(false);
     }
 
-    private List<FileExplanation> explainFiles(DocJob job, LlmSelection selection, Path repoDir) {
+    private List<FileExplanation> explainFiles(DocJob job, LlmSelection selection,
+                                               PromptConfig promptConfig, Path repoDir) {
         progressTracker.updateStatus(job, DocJobStatus.TRAVERSING, "Discovering source files...");
         List<Path> sourceFiles = fileTraverser.traverse(repoDir);
         job.setTotalFiles(sourceFiles.size());
@@ -94,7 +95,7 @@ public class JobProcessor {
                 String content = Files.readString(sourceFiles.get(i));
                 List<FileChunk> chunks = codeChunker.chunk(relativePath, content);
                 if (!chunks.isEmpty()) {
-                    explanations.add(llmClient.explainChunks(selection, chunks));
+                    explanations.add(llmClient.explainChunks(selection, promptConfig, chunks));
                 }
             } catch (Exception e) {
                 log.warn("Failed to explain file {}, skipping: {}", relativePath, e.getMessage());
@@ -107,9 +108,9 @@ public class JobProcessor {
     }
 
     private void aggregateAndComplete(DocJob job, String jobId, LlmSelection selection,
-                                      List<FileExplanation> explanations) {
+                                      PromptConfig promptConfig, List<FileExplanation> explanations) {
         progressTracker.updateStatus(job, DocJobStatus.AGGREGATING, "Generating project summary...");
-        String projectSummary = llmClient.summarizeProject(selection, explanations, job.getRepositoryUrl());
+        String projectSummary = llmClient.summarizeProject(selection, promptConfig, explanations, job.getRepositoryUrl());
         ProjectDocumentation documentation = documentationAggregator.aggregate(
                 jobId, job.getRepositoryUrl(), explanations, projectSummary);
 
