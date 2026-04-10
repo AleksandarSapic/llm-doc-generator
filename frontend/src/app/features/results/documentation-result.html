@@ -1,0 +1,58 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Documentation</h1>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="router.navigate(['/jobs', jobId(), 'status'])">
+        <mat-icon>arrow_back</mat-icon> Job Status
+      </button>
+      <button mat-stroked-button (click)="router.navigate(['/jobs'])">
+        <mat-icon>list</mat-icon> All Jobs
+      </button>
+    </div>
+  </div>
+
+  <app-error-banner [message]="error()" (dismissed)="error.set(null)"></app-error-banner>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Loading documentation...</p>
+    </div>
+  }
+
+  @if (doc(); as documentation) {
+    <mat-card class="meta-card">
+      <mat-card-content class="meta-content">
+        <div class="meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Repository</span>
+            <a [href]="documentation.repositoryUrl" target="_blank" rel="noopener" class="meta-value">
+              {{ documentation.repositoryUrl }}
+            </a>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Generated</span>
+            <span class="meta-value">{{ documentation.generatedAt | date:'medium' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Files Documented</span>
+            <span class="meta-value">{{ documentation.totalFilesDocumented }}</span>
+          </div>
+        </div>
+        <mat-divider class="meta-divider"></mat-divider>
+        <div class="download-row">
+          <button mat-raised-button color="primary" (click)="downloadMarkdown()">
+            <mat-icon>download</mat-icon>
+            Download .md
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="doc-card">
+      <mat-card-content>
+        <div class="prose" [innerHTML]="documentation.markdownContent | markdown"></div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

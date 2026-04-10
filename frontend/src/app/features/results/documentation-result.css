@@ -1,0 +1,82 @@
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.meta-card {
+  margin-bottom: 16px;
+}
+
+.meta-content {
+  padding: 16px !important;
+}
+
+.meta-grid {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-label {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-value {
+  font-size: 0.9rem;
+  color: var(--mat-sys-on-surface);
+}
+
+a.meta-value {
+  color: var(--mat-sys-primary);
+}
+
+.meta-divider {
+  margin: 12px 0;
+}
+
+.download-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.doc-card mat-card-content {
+  padding: 24px !important;
+}

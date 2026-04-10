@@ -1,0 +1,33 @@
+<div class="progress-tracker">
+  <div class="status-row">
+    <app-status-badge [status]="status().status"></app-status-badge>
+    <span class="status-message">{{ status().statusMessage }}</span>
+  </div>
+
+  @if (status().totalFiles > 0) {
+    <div class="progress-section">
+      <mat-progress-bar
+        mode="determinate"
+        [value]="status().progressPercent"
+        class="progress-bar"
+      ></mat-progress-bar>
+      <div class="progress-labels">
+        <span class="file-count">{{ status().processedFiles }} / {{ status().totalFiles }} files processed</span>
+        <span class="percent">{{ status().progressPercent }}%</span>
+      </div>
+    </div>
+  } @else if (!isTerminal()) {
+    <mat-progress-bar mode="indeterminate" class="progress-bar"></mat-progress-bar>
+  }
+
+  <mat-divider class="divider"></mat-divider>
+
+  <div class="meta-row">
+    <span class="meta-label">Provider</span>
+    <span class="meta-value">{{ status().llmProvider }} / {{ status().llmModel }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Job ID</span>
+    <span class="meta-value mono">{{ status().jobId }}</span>
+  </div>
+</div>

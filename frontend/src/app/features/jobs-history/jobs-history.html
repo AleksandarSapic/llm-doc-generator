@@ -1,0 +1,45 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">All Jobs</h1>
+    <button mat-raised-button color="primary" routerLink="/submit">
+      <mat-icon>add</mat-icon> New Job
+    </button>
+  </div>
+
+  <app-error-banner [message]="error()" (dismissed)="error.set(null)"></app-error-banner>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (jobs().length === 0) {
+    <mat-card class="empty-card">
+      <mat-card-content class="empty-content">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <p>No jobs yet.</p>
+        <a mat-raised-button color="primary" routerLink="/submit">Submit your first job</a>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card>
+      <div class="table-wrapper">
+        <table class="jobs-table">
+          <thead>
+            <tr>
+              <th>Job ID</th>
+              <th>Status</th>
+              <th>Provider / Model</th>
+              <th class="right">Progress</th>
+              <th class="right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (job of jobs(); track job.jobId) {
+              <app-job-history-row [job]="job"></app-job-history-row>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-card>
+  }
+</div>

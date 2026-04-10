@@ -1,0 +1,16 @@
+<mat-toolbar color="primary" class="toolbar">
+  <span class="brand">LLM Doc Generator</span>
+  <span class="spacer"></span>
+  <nav class="nav-links">
+    <a mat-button routerLink="/submit" routerLinkActive="nav-active">New Job</a>
+    <a mat-button routerLink="/jobs" routerLinkActive="nav-active">All Jobs</a>
+  </nav>
+</mat-toolbar>
+
+@if (loadingService.isLoading()) {
+  <mat-progress-bar mode="indeterminate" class="global-loader"></mat-progress-bar>
+}
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

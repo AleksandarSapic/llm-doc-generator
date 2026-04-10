@@ -1,0 +1,52 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Job Progress</h1>
+    <button mat-button (click)="router.navigate(['/jobs'])">
+      <mat-icon>arrow_back</mat-icon> All Jobs
+    </button>
+  </div>
+
+  <app-error-banner [message]="error()" (dismissed)="error.set(null)"></app-error-banner>
+
+  @if (isLoading() && !jobStatus()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Connecting to job stream...</p>
+    </div>
+  }
+
+  @if (jobStatus(); as status) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ status.jobId }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="card-content">
+        <app-progress-tracker
+          [status]="status"
+          [isTerminal]="isTerminal()"
+        ></app-progress-tracker>
+
+        @if (status.errorMessage) {
+          <div class="error-detail">
+            <strong>Error detail:</strong>
+            <pre>{{ status.errorMessage }}</pre>
+          </div>
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        @if (isCompleted()) {
+          <button mat-raised-button color="primary" (click)="viewResults()">
+            <mat-icon>description</mat-icon>
+            View Documentation
+          </button>
+        }
+        @if (isFailed()) {
+          <button mat-stroked-button (click)="router.navigate(['/submit'])">
+            <mat-icon>refresh</mat-icon>
+            Try Again
+          </button>
+        }
+      </mat-card-actions>
+    </mat-card>
+  }
+</div>

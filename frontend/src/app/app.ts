@@ -1,12 +1,10 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { PageShellComponent } from './shared/components/page-shell/page-shell';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [PageShellComponent],
+  template: `<app-page-shell></app-page-shell>`,
 })
-export class App {
-  protected readonly title = signal('llm-doc-generator-frontend');
-}
+export class App {}

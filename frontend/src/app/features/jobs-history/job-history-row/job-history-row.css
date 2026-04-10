@@ -1,0 +1,22 @@
+:host {
+  display: contents;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.provider-cell {
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.progress-cell {
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.action-cell {
+  text-align: right;
+}

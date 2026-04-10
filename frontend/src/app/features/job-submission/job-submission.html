@@ -1,0 +1,82 @@
+<div class="page-container">
+  <h1 class="page-title">Generate Documentation</h1>
+  <p class="page-subtitle">Point to any public Git repository and let the LLM explain every file for you.</p>
+
+  <app-error-banner [message]="error()" (dismissed)="error.set(null)"></app-error-banner>
+
+  <mat-card>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Repository URL</mat-label>
+          <input matInput formControlName="repositoryUrl" placeholder="https://github.com/owner/repo" />
+          <mat-icon matSuffix>link</mat-icon>
+          @if (form.get('repositoryUrl')?.hasError('required') && form.get('repositoryUrl')?.touched) {
+            <mat-error>Repository URL is required.</mat-error>
+          }
+          @if (form.get('repositoryUrl')?.hasError('pattern') && form.get('repositoryUrl')?.touched) {
+            <mat-error>URL must start with http:// or https://</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="provider-row">
+          <mat-form-field appearance="outline" class="provider-field">
+            <mat-label>LLM Provider</mat-label>
+            <mat-select formControlName="provider">
+              <mat-option value="">Default</mat-option>
+              <mat-option value="openai">OpenAI</mat-option>
+              <mat-option value="anthropic">Anthropic</mat-option>
+              <mat-option value="ollama">Ollama</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="model-field">
+            <mat-label>Model</mat-label>
+            <input matInput formControlName="model" [placeholder]="modelPlaceholder()" />
+            <mat-hint>Leave blank to use the provider default</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <mat-expansion-panel class="template-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>Customize Prompt Templates (optional)</mat-panel-title>
+            <mat-panel-description>Override default file and summary prompts</mat-panel-description>
+          </mat-expansion-panel-header>
+
+          @if (templatesLoading()) {
+            <div class="templates-loading">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>Loading default templates...</span>
+            </div>
+          } @else {
+            <app-template-editor
+              [values]="templateValues()"
+              (valuesChange)="templateValues.set($event)"
+            ></app-template-editor>
+          }
+        </mat-expansion-panel>
+
+        <div class="submit-row">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="form.invalid || submitting()"
+          >
+            @if (submitting()) {
+              <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+              Submitting...
+            } @else {
+              <ng-container>
+                <mat-icon>rocket_launch</mat-icon>
+                Generate Docs
+              </ng-container>
+            }
+          </button>
+        </div>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

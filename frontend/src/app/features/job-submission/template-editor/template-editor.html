@@ -1,0 +1,29 @@
+<div class="template-editor">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>File Explanation Template</mat-label>
+    <textarea
+      matInput
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="6"
+      cdkAutosizeMaxRows="16"
+      [value]="values().fileExplanationTemplate"
+      (input)="onFileTemplateChange($event)"
+      placeholder="Prompt template used to explain each source file..."
+    ></textarea>
+    <mat-hint>Used to explain each source file. Supports template placeholders for filePath and content.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Project Summary Template</mat-label>
+    <textarea
+      matInput
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="6"
+      cdkAutosizeMaxRows="16"
+      [value]="values().projectSummaryTemplate"
+      (input)="onSummaryTemplateChange($event)"
+      placeholder="Prompt template used to generate the project summary..."
+    ></textarea>
+    <mat-hint>Used to create the overall project summary from all file explanations.</mat-hint>
+  </mat-form-field>
+</div>
