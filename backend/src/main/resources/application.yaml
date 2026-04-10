@@ -2,7 +2,7 @@ spring:
   application:
     name: LLM Documentation Generator
   config:
-    import: file:.env[.properties]
+    import: optional:file:.env[.properties]
   threads:
     virtual:
       enabled: true
@@ -100,6 +100,9 @@ logging:
     org.eclipse.jgit: WARN
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{jobId}] %logger{36} - %msg%n"
+
+server:
+  shutdown: graceful
 
 management:
   endpoints:
