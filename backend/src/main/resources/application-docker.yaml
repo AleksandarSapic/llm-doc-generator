@@ -1,0 +1,9 @@
+# Profile-specific overrides applied when SPRING_PROFILES_ACTIVE=docker
+# (set by docker-compose.yml). Reduces log verbosity for production-like runs
+# and uses a structured timestamp format suitable for log aggregation tools.
+logging:
+  level:
+    com.aleksandarsapic.llm_doc_generator: INFO
+    org.flywaydb: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'} %-5level [%X{jobId}] %logger{36} - %msg%n"

@@ -1,0 +1,88 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: llm-doc-postgres
+    environment:
+      POSTGRES_DB:       ${DATABASE_NAME:-llm_doc_generator}
+      POSTGRES_USER:     ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-postgres} -d ${DATABASE_NAME:-llm_doc_generator}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - llm-doc-net
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  backend:
+    container_name: llm-doc-backend
+    build:
+      context: ./backend
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL:           jdbc:postgresql://db:5432/${DATABASE_NAME:-llm_doc_generator}
+      DATABASE_USERNAME:      ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD:      ${DATABASE_PASSWORD:-postgres}
+      OLLAMA_BASE_URL:        ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Exceeds Spring Boot's 30s graceful shutdown timeout
+    stop_grace_period: 35s
+    restart: unless-stopped
+    networks:
+      - llm-doc-net
+    deploy:
+      resources:
+        limits:
+          memory: 1536m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  frontend:
+    container_name: llm-doc-frontend
+    build:
+      context: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - llm-doc-net
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+
+networks:
+  llm-doc-net:
+    driver: bridge
